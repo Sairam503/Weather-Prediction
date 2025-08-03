@@ -2,19 +2,22 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# Title
-st.title("🌦️ Weather Data Explorer")
-
-# Load CSV
+# Load data
 df = pd.read_csv("./processed_weather_data.csv")
 
-# Create a datetime column manually from Month, Day, Hour
-df['datetime'] = pd.to_datetime({
-    'year': 2025,  # You can change the year if needed
-    'month': df['Month'],
-    'day': df['Day'],
-    'hour': df['Hour']
-})
+# Safely create a datetime column
+def safe_datetime(row):
+    try:
+        return datetime(2025, int(row['Month']), int(row['Day']), int(row['Hour']))
+    except ValueError:
+        return pd.NaT  # Not a Time (missing value)
+
+df['datetime'] = df.apply(safe_datetime, axis=1)
+
+# Drop invalid rows
+df = df.dropna(subset=['datetime'])
+
+# Extract date and time for filters
 df['date_only'] = df['datetime'].dt.date
 df['time_only'] = df['datetime'].dt.time
 
@@ -37,25 +40,23 @@ filtered_df = df[
     (df['time_only'] == selected_time)
 ]
 
-# Show filtered data
+# Display data
 st.subheader("📄 Filtered Weather Data")
 st.dataframe(filtered_df)
 
-# Line Chart of Temperature over time for selected date
 st.subheader(f"🌡️ Temperature Trend on {selected_date} in {selected_state}")
 temp_day = df[(df['State'] == selected_state) & (df['date_only'] == selected_date)]
 st.line_chart(temp_day.set_index('datetime')['Temperature'])
 
-# Summary statistics
 st.subheader("📊 Summary Statistics")
 st.write(filtered_df.describe())
 
-# Weather type information
 st.subheader("🌈 Weather Type")
-weather_type = filtered_df['WeatherType'].values[0] if not filtered_df.empty else "N/A"
-st.write(f"**Weather:** {weather_type}")
+if not filtered_df.empty:
+    st.write(f"**Weather:** {filtered_df.iloc[0]['WeatherType']}")
+else:
+    st.write("No weather data for this selection.")
 
-# Download button
 st.subheader("⬇️ Download Filtered Data")
 st.download_button(
     label="Download as CSV",
