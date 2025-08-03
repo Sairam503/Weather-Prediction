@@ -14,7 +14,7 @@ __pycache__/
 # (Optional) If you don’t want the CSV on GitHub
 # processed_weather_data.csv
 # Ignore model pickle files
-weather_model.pkl
-state_encoder.pkl
-weather_encoder.pkl
+./weather_model.pkl
+./state_encoder.pkl
+./weather_encoder.pkl
 
