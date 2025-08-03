@@ -2,38 +2,40 @@
 
 # 📦 Import Required Libraries
 import pandas as pd
-from sklearn.model_selection import train_test_split
+import pickle
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report
-import joblib
+from sklearn.model_selection import train_test_split
 
-# 📥 Load Dataset
+# Load dataset
 df = pd.read_csv("./processed_weather_data.csv")
 
-# 🧹 Data Preprocessing
-# Encode categorical features
-le_state = LabelEncoder()
-le_weather = LabelEncoder()
-df['State'] = le_state.fit_transform(df['State'])
-df['WeatherType'] = le_weather.fit_transform(df['WeatherType'])
-
-# 🎯 Features and Target
-X = df[['State', 'Month', 'Day', 'Hour', 'Temperature', 'Humidity', 'WindSpeed']]
+# Select only required features
+X = df[['State', 'Month', 'Day', 'Hour']]
 y = df['WeatherType']
 
-# 🔀 Split Dataset
+# Encode categorical variables
+state_encoder = LabelEncoder()
+weather_encoder = LabelEncoder()
+
+X['State'] = state_encoder.fit_transform(X['State'])
+y = weather_encoder.fit_transform(y)
+
+# Save encoders
+with open('state_encoder.pkl', 'wb') as f:
+    pickle.dump(state_encoder, f)
+with open('weather_encoder.pkl', 'wb') as f:
+    pickle.dump(weather_encoder, f)
+
+# Train-test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# 🧠 Train Model
-model = RandomForestClassifier(random_state=42)
+# Train the model
+model = RandomForestClassifier()
 model.fit(X_train, y_train)
 
-# 📊 Evaluate Model
-y_pred = model.predict(X_test)
-print("Classification Report:\n", classification_report(y_test, y_pred))
+# Save the model
+with open('weather_predictor.pkl', 'wb') as f:
+    pickle.dump(model, f)
 
-# 💾 Save Model and Encoders
-joblib.dump(model, "weather_model.pkl")
-joblib.dump(le_state, "state_encoder.pkl")
-joblib.dump(le_weather, "weather_encoder.pkl")
+print("✅ Model trained and saved successfully.")
