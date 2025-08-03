@@ -1,38 +1,39 @@
+# model.py
+
+# 📦 Import Required Libraries
 import pandas as pd
-import numpy as np
-import pickle
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
+import joblib
 
-# Load the dataset
-df = pd.read_csv('processed_weather_data.csv')
+# 📥 Load Dataset
+df = pd.read_csv("./processed_weather_data.csv")
 
-# Fix date parsing
-df = df.dropna(subset=['year', 'month', 'day'])
-df['datetime'] = pd.to_datetime(df[['year', 'month', 'day']], errors='coerce')
-df = df.dropna(subset=['datetime'])
+# 🧹 Data Preprocessing
+# Encode categorical features
+le_state = LabelEncoder()
+le_weather = LabelEncoder()
+df['State'] = le_state.fit_transform(df['State'])
+df['WeatherType'] = le_weather.fit_transform(df['WeatherType'])
 
-# Target variable: Let's assume "temperature" exists
-target = 'temperature'
+# 🎯 Features and Target
+X = df[['State', 'Month', 'Day', 'Hour', 'Temperature', 'Humidity', 'WindSpeed']]
+y = df['WeatherType']
 
-# Drop unwanted columns
-features = df.drop(columns=[target, 'datetime', 'station', 'year', 'month', 'day'])
-
-# Final features
-X = features
-y = df[target]
-
-# Split and train
+# 🔀 Split Dataset
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-model = RandomForestRegressor()
+
+# 🧠 Train Model
+model = RandomForestClassifier(random_state=42)
 model.fit(X_train, y_train)
 
-# Evaluate
-preds = model.predict(X_test)
-rmse = np.sqrt(mean_squared_error(y_test, preds))
-print(f"RMSE: {rmse:.2f}")
+# 📊 Evaluate Model
+y_pred = model.predict(X_test)
+print("Classification Report:\n", classification_report(y_test, y_pred))
 
-# Save model
-with open('model.pkl', 'wb') as f:
-    pickle.dump(model, f)
+# 💾 Save Model and Encoders
+joblib.dump(model, "weather_model.pkl")
+joblib.dump(le_state, "state_encoder.pkl")
+joblib.dump(le_weather, "weather_encoder.pkl")
