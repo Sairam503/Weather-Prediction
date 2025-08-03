@@ -1,0 +1,15 @@
+# Ignore Python virtual environment
+.venv/
+
+# Ignore OS or editor files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.DS_Store
+
+# Ignore VSCode settings
+.vscode/
+
+# (Optional) If you don’t want the CSV on GitHub
+# processed_weather_data.csv
