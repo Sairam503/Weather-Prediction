@@ -3,9 +3,9 @@ import pickle
 import pandas as pd
 
 # Load model and encoders
-with open('weather_predictor.pkl', 'rb') as f:
+with open('./weather_predictor.pkl', 'rb') as f:
     model = pickle.load(f)
-with open('state_encoder.pkl', 'rb') as f:
+with open('./state_encoder.pkl', 'rb') as f:
     state_encoder = pickle.load(f)
 with open('weather_encoder.pkl', 'rb') as f:
     weather_encoder = pickle.load(f)
